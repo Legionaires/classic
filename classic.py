@@ -56,6 +56,17 @@ class HandlerBase(tornado.web.RequestHandler):
 				return d["data_prefix"]
 		self.set_status(404)	
 		return ""
+
+	def username(self, user_id):
+		c = self.application.db.cursor()
+		c.execute("SELECT pn_uname FROM pn_users WHERE pn_uid=%s", (user_id,))
+		row = c.fetchone()
+		if row:
+			return row[0].decode('latin1').encode('utf8')
+		else:
+			return "Unknown"	
+
+
 	
 class MainHandler(HandlerBase):
 	def get(self):
@@ -94,7 +105,7 @@ class ForumHandler(HandlerBase):
 			c.execute(select_text, (forum_id,))
 			for row in c.fetchall():
 				title = row[1].decode('latin1').encode('utf8')
-				thread_list.append({"title":title, "creator_id":str(row[2]),  "url":root_url+db+"/"+forum_id+"/"+str(row[2])})
+				thread_list.append({"title":title, "creator":self.username(row[2]),  "url":root_url+db+"/"+forum_id+"/"+str(row[2])})
 			out["threads"] = thread_list
 			self.write(out)
 
@@ -118,7 +129,7 @@ class ThreadHandler(HandlerBase):
 				row2 = c2.fetchone()
 				subject = row2[0].decode('latin1').encode('utf8')
 				text = row2[1].decode('latin1').encode('utf8')
-				post_list.append({"subject":subject, "text":text,"poster_id":str(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"/"+str(row[0])})
+				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"/"+str(row[0])})
 			out["posts"] = post_list
 			self.write(out) 
 
