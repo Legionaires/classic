@@ -110,7 +110,6 @@ class ForumHandler(HandlerBase):
 			self.write(out)
 
 
-#TODO: use a JOIN!
 class ThreadHandler(HandlerBase):
 	def get(self, db, forum_id, topic_id):
 		prefix = self.prefix(db)
@@ -118,21 +117,21 @@ class ThreadHandler(HandlerBase):
 			out = {}
 			post_list = []
 			c = self.application.db.cursor()
-			select_table = "SELECT post_id, poster_id from %s" % prefix + "_posts"
-			select_text = select_table + " WHERE topic_id=%s ORDER BY post_id"
-			c.execute(select_text, (topic_id,))
+			
+			select_table_one = prefix + "_posts"
+			select_table_two = prefix + "_posts_text"
+			
+			select_tables = "SELECT %s.post_id, poster_id, post_subject, post_text FROM %s" % (select_table_one, select_table_one)
+			select_join = " INNER JOIN %s ON %s.post_id=%s.post_id" % (select_table_two, select_table_one, select_table_two)
+			select_where = " WHERE topic_id=%s ORDER BY post_id"
+			select_statement = select_tables + select_join + select_where
+			c.execute(select_statement, (topic_id,))
 			for row in c.fetchall():
-				c2 = self.application.db.cursor()
-				select_table2 = "SELECT post_subject,post_text from %s" % prefix + "_posts_text"
-				select_text2 = select_table2 + " WHERE post_id=%s"
-				c2.execute(select_text2, (row[0],))
-				row2 = c2.fetchone()
-				subject = row2[0].decode('latin1').encode('utf8')
-				text = row2[1].decode('latin1').encode('utf8')
+				subject = row[2].decode('latin1').encode('utf8')
+				text = row[3].decode('latin1').encode('utf8')
 				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"/"+str(row[0])})
-			out["posts"] = post_list
-			self.write(out) 
-
+			self.write({ "posts":post_list})
+							
 
 
 class CountHandler(tornado.web.RequestHandler):
