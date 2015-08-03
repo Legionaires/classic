@@ -1,0 +1,8 @@
+{% extends "frame.html" %}
+
+{% block body %}
+  {% for forum in forums %}
+    <a href="{{forum["url"]}}">{{forum["name"]}}</a> {{forum["description"]}}
+    <br>
+  {% end %}
+{% end %}

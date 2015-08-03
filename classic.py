@@ -55,7 +55,7 @@ class HandlerBase(tornado.web.RequestHandler):
 		for d in self.application.databases:
 			if d["url"] == name:
 				return d["data_prefix"]
-		self.set_status(404)	
+		self.setstatus(404)	
 		return ""
 
 	def username(self, user_id):
@@ -68,10 +68,10 @@ class HandlerBase(tornado.web.RequestHandler):
 			return "Unknown"	
 
 	def write_json_or_html(self, json_data):
-		if(True):#TODO: check headers
-			self.write(json_data)	
+		if("text/html" in self.request.headers["accept"]):
+			self.write_html(json_data)	
 		else:
-			self.write_html(json_data)
+			self.write(json_data)
 
 	def write_html(self, json_data):
 		#subclass this method!
@@ -87,7 +87,8 @@ class MainHandler(HandlerBase):
 		self.write_json_or_html(out)
 	
 	def write_html(self, json_data):
-		pass
+		self.render("dblist.html", dbs=json_data["databases"])
+
 
 
 class DatabaseHandler(HandlerBase):
@@ -106,7 +107,7 @@ class DatabaseHandler(HandlerBase):
 			self.write_json_or_html(out)
         
         def write_html(self, json_data):
-                pass
+		self.render("database.html", forums=json_data["forums"])	
 
 
 class ForumHandler(HandlerBase):
@@ -126,7 +127,7 @@ class ForumHandler(HandlerBase):
                         self.write_json_or_html(out)
 
         def write_html(self, json_data):
-                pass
+		self.render("forum.html", threads=json_data["threads"])
 
 
 class ThreadHandler(HandlerBase):
@@ -152,7 +153,7 @@ class ThreadHandler(HandlerBase):
                         self.write_json_or_html({"posts":post_list})
 
         def write_html(self, json_data):
-                pass
+		self.render("thread.html", posts=json_data["posts"])
 	
 
 

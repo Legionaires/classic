@@ -1,0 +1,9 @@
+{% extends "frame.html" %}
+
+{% block body %}
+  {% for db in dbs %}
+    <div class="db">
+      <a href="{{ db["url"] }}">{{ db["name"]}}</a>
+    </div>
+  {% end %}
+{% end %}

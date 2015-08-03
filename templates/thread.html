@@ -1,0 +1,10 @@
+{% extends "frame.html" %}
+
+{% block body %}
+  {% for post in posts %}
+    <a href="{{post["url"]}}">Direct link</a> <strong>{{post["poster"]}}</strong>
+    <br>
+    {{post["text"]}}
+    <br>
+  {% end %}
+{% end %}
