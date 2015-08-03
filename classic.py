@@ -12,16 +12,17 @@ Ideally each endpoint will work for JSON and HTML.  JSON first
 """
 
 root_url = "undefined"
-
+server_port = 0
 
 
 
 class Application(tornado.web.Application):
 	def __init__(self):
-		global root_url		
+		global root_url, server_port		
 		config_file = open("config.json").read()
 		config_data = json.loads(config_file)
 		root_url = config_data["server"]
+		server_port = config_data["port"]
 
 		handlers = [
 			(r"/main", MainHandler),
@@ -164,7 +165,7 @@ class CountHandler(tornado.web.RequestHandler):
 
 def main():
 	http_server = tornado.httpserver.HTTPServer(Application())
-	http_server.listen(8080)
+	http_server.listen(server_port)
 	tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
