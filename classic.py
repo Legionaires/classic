@@ -66,7 +66,15 @@ class HandlerBase(tornado.web.RequestHandler):
 		else:
 			return "Unknown"	
 
+	def write_json_or_html(self, json_data):
+		if(True):#TODO: check headers
+			self.write(json_data)	
+		else:
+			self.write_html(json_data)
 
+	def write_html(self, json_data):
+		#subclass this method!
+		pass
 	
 class MainHandler(HandlerBase):
 	def get(self):
@@ -75,7 +83,10 @@ class MainHandler(HandlerBase):
 		for d in self.application.databases:
 			dbs.append({"name":d["name"], "url":root_url + d["url"]})
 		out["databases"] = dbs
-		self.write(out)
+		self.write_json_or_html(out)
+	
+	def write_html(self, json_data):
+		pass
 
 
 class DatabaseHandler(HandlerBase):
@@ -91,7 +102,11 @@ class DatabaseHandler(HandlerBase):
 				forum_desc = row[2].decode('latin1').encode('utf8')
 				forum_list.append({"name":forum_name, "description":forum_desc,"url":root_url+db+"/"+str(row[0])})
 			out["forums"] = forum_list
-			self.write(out)	
+			self.write_json_or_html(out)
+        
+        def write_html(self, json_data):
+                pass
+
 
 class ForumHandler(HandlerBase):
 	def get(self, db, forum_id):
@@ -107,7 +122,10 @@ class ForumHandler(HandlerBase):
 				title = row[1].decode('latin1').encode('utf8')
 				thread_list.append({"title":title, "creator":self.username(row[2]),  "url":root_url+db+"/"+forum_id+"/"+str(row[2])})
 			out["threads"] = thread_list
-			self.write(out)
+                        self.write_json_or_html(out)
+
+        def write_html(self, json_data):
+                pass
 
 
 class ThreadHandler(HandlerBase):
@@ -130,8 +148,11 @@ class ThreadHandler(HandlerBase):
 				subject = row[2].decode('latin1').encode('utf8')
 				text = row[3].decode('latin1').encode('utf8')
 				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"/"+str(row[0])})
-			self.write({ "posts":post_list})
-							
+                        self.write_json_or_html({"posts":post_list})
+
+        def write_html(self, json_data):
+                pass
+	
 
 
 class CountHandler(tornado.web.RequestHandler):
