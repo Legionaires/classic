@@ -132,15 +132,22 @@ class ThreadHandler(HandlerBase):
 			out = {}
 			post_list = []
 			c = self.application.db.cursor()
-			
+			post_limit_text = "10"
+			try:
+				post_limit_check = self.get_query_argument("count", "10")
+				post_limit = int(post_limit_check)   #verify this is a valid int
+				post_limit_text = post_limit_check 
+			except ValueError:
+				pass			
+
 			select_table_one = prefix + "_posts"
 			select_table_two = prefix + "_posts_text"
 			
 			select_tables = "SELECT %s.post_id, poster_id, post_subject, post_text FROM %s" % (select_table_one, select_table_one)
 			select_join = " INNER JOIN %s ON %s.post_id=%s.post_id" % (select_table_two, select_table_one, select_table_two)
-			select_where = " WHERE topic_id=%s ORDER BY post_id"
+			select_where = " WHERE topic_id=%s ORDER BY post_id LIMIT %s"
 			select_statement = select_tables + select_join + select_where
-			c.execute(select_statement, (topic_id,))
+			c.execute(select_statement, (topic_id, post_limit))
 			for row in c.fetchall():
 				subject = row[2].decode('latin1').encode('utf8')
 				text = row[3].decode('latin1').encode('utf8')
