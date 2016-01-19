@@ -139,14 +139,22 @@ class ThreadHandler(HandlerBase):
 			except ValueError:
 				pass			
 
+			post_start = 0
+			try:
+				post_start_check = self.get_query_argument("start", "0")
+				post_start = int(post_start_check)   #verify this is a valid int
+			except ValueError:
+				pass			
 			select_table_one = prefix + "_posts"
 			select_table_two = prefix + "_posts_text"
 			
 			select_tables = "SELECT %s.post_id, poster_id, post_subject, post_text FROM %s" % (select_table_one, select_table_one)
 			select_join = " INNER JOIN %s ON %s.post_id=%s.post_id" % (select_table_two, select_table_one, select_table_two)
-			select_where = " WHERE topic_id=%s ORDER BY post_id LIMIT %s"
-			select_statement = select_tables + select_join + select_where
-			c.execute(select_statement, (topic_id, post_limit))
+			select_where_1 = " WHERE topic_id=%s AND forum_id=%s AND "
+			select_where_2 = "%s.post_id" % (select_table_one)
+			select_rest = " >%s ORDER BY post_id LIMIT %s"			
+			select_statement = select_tables + select_join + select_where_1 + select_where_2 + select_rest
+			c.execute(select_statement, (topic_id, forum_id, post_start, post_limit))
 			for row in c.fetchall():
 				subject = row[2].decode('latin1').encode('utf8')
 				text = row[3].decode('latin1').encode('utf8')
