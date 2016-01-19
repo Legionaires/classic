@@ -40,12 +40,7 @@ class Application(tornado.web.Application):
 						user=config_data["user"],
 						passwd=config_data["passwd"])
 
-		self.databases = [
-			{ "name":"Classic M&R", "data_prefix":"classic", "url":"mr"},
-			{ "name":"Lacy", "data_prefix":"lacy", "url":"lacy"},
-			{ "name":"Old M&R", "data_prefix":"pn_phpbb","url":"old"},
-			{ "name":"OOC", "data_prefix":"phpbb","url":"ooc"},
-		]
+		self.databases = config_data["databases"] 
 
 	
 """  Ideally, we should be able to have each give direct json or wrap in html"""
