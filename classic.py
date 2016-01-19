@@ -132,11 +132,10 @@ class ThreadHandler(HandlerBase):
 			out = {}
 			post_list = []
 			c = self.application.db.cursor()
-			post_limit_text = "10"
+			post_limit = 10
 			try:
 				post_limit_check = self.get_query_argument("count", "10")
 				post_limit = int(post_limit_check)   #verify this is a valid int
-				post_limit_text = post_limit_check 
 			except ValueError:
 				pass			
 
