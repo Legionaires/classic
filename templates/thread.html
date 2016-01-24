@@ -7,4 +7,8 @@
     {{post["text"]}}
     <br>
   {% end %}
+  {% if continue_url %}
+    <a href="{{continue_url}}">Next Page</a>
+  {% end %}
+
 {% end %}

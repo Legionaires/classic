@@ -6,6 +6,7 @@ import tornado.web
 import os.path
 import json
 import tornado.escape
+import convert
 
 """
 Ideally each endpoint will work for JSON and HTML.  JSON first
@@ -152,17 +153,21 @@ class ThreadHandler(HandlerBase):
 			select_join = " INNER JOIN %s ON %s.post_id=%s.post_id" % (select_table_two, select_table_one, select_table_two)
 			select_where_1 = " WHERE topic_id=%s AND forum_id=%s AND "
 			select_where_2 = "%s.post_id" % (select_table_one)
-			select_rest = " >%s ORDER BY post_id LIMIT %s"			
+			select_rest = " >=%s ORDER BY post_id LIMIT %s"			
 			select_statement = select_tables + select_join + select_where_1 + select_where_2 + select_rest
-			c.execute(select_statement, (topic_id, forum_id, post_start, post_limit))
-			for row in c.fetchall():
+			c.execute(select_statement, (topic_id, forum_id, post_start, post_limit + 1))
+			for row in c.fetchmany(post_limit):
 				subject = row[2].decode('latin1').encode('utf8')
 				text = row[3].decode('latin1').encode('utf8')
-				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"/"+str(row[0])})
-                        self.write_json_or_html({"posts":post_list})
+				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"?start="+str(row[0])+"&count="+str(post_limit)})
+                        json_data = {"posts":post_list, "continue_url":None}
+			if c.rowcount == post_limit + 1:
+				row = c.fetchone()
+				json_data["continue_url"] = root_url+db+"/"+forum_id+"/"+topic_id+"?start="+str(row[0])+"&count="+str(post_limit)
+			self.write_json_or_html(json_data)
 
         def write_html(self, json_data):
-		self.render("thread.html", posts=json_data["posts"])
+		self.render("thread.html", posts=json_data["posts"], continue_url=json_data["continue_url"])
 	
 
 
