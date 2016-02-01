@@ -28,6 +28,7 @@ class Application(tornado.web.Application):
 		handlers = [
 			(r"/main", MainHandler),
 			(r"/count", CountHandler),
+			(r"/test", TestHandler),
 			(r"/", tornado.web.RedirectHandler, dict(url=r"/main")),
 			(r"/([a-z]+)", DatabaseHandler),
 			(r"/([a-z]+)/([0-9]+)",ForumHandler),
@@ -84,6 +85,10 @@ class MainHandler(HandlerBase):
 	
 	def write_html(self, json_data):
 		self.render("dblist.html", dbs=json_data["databases"])
+
+class TestHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.render("test.html")
 
 
 
@@ -149,7 +154,7 @@ class ThreadHandler(HandlerBase):
 			select_table_one = prefix + "_posts"
 			select_table_two = prefix + "_posts_text"
 			
-			select_tables = "SELECT %s.post_id, poster_id, post_subject, post_text FROM %s" % (select_table_one, select_table_one)
+			select_tables = "SELECT %s.post_id, poster_id, post_subject, post_text, bbcode_uid FROM %s" % (select_table_one, select_table_one)
 			select_join = " INNER JOIN %s ON %s.post_id=%s.post_id" % (select_table_two, select_table_one, select_table_two)
 			select_where_1 = " WHERE topic_id=%s AND forum_id=%s AND "
 			select_where_2 = "%s.post_id" % (select_table_one)
@@ -159,7 +164,8 @@ class ThreadHandler(HandlerBase):
 			for row in c.fetchmany(post_limit):
 				subject = row[2].decode('latin1').encode('utf8')
 				text = row[3].decode('latin1').encode('utf8')
-				post_list.append({"subject":subject, "text":text,"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"?start="+str(row[0])+"&count="+str(post_limit)})
+				converter = convert.Converter(text, row[4])
+				post_list.append({"subject":subject, "text":converter.process(),"poster":self.username(row[1]), "url":root_url+db+"/"+forum_id+"/"+topic_id+"?start="+str(row[0])+"&count="+str(post_limit)})
                         json_data = {"posts":post_list, "continue_url":None}
 			if c.rowcount == post_limit + 1:
 				row = c.fetchone()
