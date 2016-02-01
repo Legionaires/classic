@@ -8,7 +8,7 @@ class Converter:
 		self.bbcode_uid = bbcode_uid
 		self.text = self.raw_text
 
-	def process(self):
+	def convert(self):
 		self.basic_substitution("/b")	
 		self.basic_substitution("b")
 		self.basic_substitution("i")
@@ -17,6 +17,10 @@ class Converter:
 		self.basic_substitution("/u")
 		self.sub_with_param("color", "font color")
 		self.simple("/color", "/font")
+		self.text = self.text.replace('\n', "<br>")	
+	
+	def process(self):
+		self.convert()	
 		return self.text
 
 
